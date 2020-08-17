@@ -1,53 +1,53 @@
 import express from 'express';
-import { fromJS } from 'immutable';
 import cors from 'cors';
-
-import jsonData from './data.json';
+import data from './data.json';
 
 const app = express();
-const data = fromJS(jsonData);
 const fakeLatency = 1000;
 
-const filterArticles = filter => (req, res) => setTimeout(
-  () => res.json(
-    data
-      .map(a => a.delete('full'))
-      .filter(filter)
-      .toJS(),
-  ),
-  fakeLatency,
-);
+function filterArticles(filter) {
+  return (req, res) => setTimeout(
+    () => res.json(
+      data
+        .map(({ full, ...item }) => item)
+        .filter(filter),
+    ),
+    fakeLatency,
+  );
+}
 
 app.use(cors());
 
 app.get(
   '/articles/local',
-  filterArticles(a => a.get('category') === 'local'),
+  filterArticles(a => a.category === 'local'),
 );
 
 app.get(
   '/articles/global',
-  filterArticles(a => a.get('category') === 'global'),
+  filterArticles(a => a.category === 'global'),
 );
 
 app.get(
   '/articles/tech',
-  filterArticles(a => a.get('category') === 'tech'),
+  filterArticles(a => a.category === 'tech'),
 );
 
 app.get(
   '/articles/sports',
-  filterArticles(a => a.get('category') === 'sports'),
+  filterArticles(a => a.category === 'sports'),
 );
 
-app.get('/articles/:id', (req, res) =>
-  setTimeout(
-    () =>
-      res.json(data.find(a => a.get('id') === +req.params.id).toJS()),
-    fakeLatency
-  )
-);
+app.get('/articles/:id', (req, res) => setTimeout(
+  () => res.json(
+    data.find(a => a.id === +req.params.id).toJS(),
+  ),
+  fakeLatency,
+));
 
-app.get('/articles', filterArticles(() => true));
+app.get(
+  '/articles',
+  filterArticles(() => true),
+);
 
 app.listen(3001, () => console.log('Listening on port 3001...'));
