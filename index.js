@@ -40,7 +40,7 @@ app.get(
 
 app.get('/articles/:id', (req, res) => setTimeout(
   () => res.json(
-    data.find(a => a.id === +req.params.id).toJS(),
+    data.find(a => a.id === +req.params.id),
   ),
   fakeLatency,
 ));
